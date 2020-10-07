@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
 
-public class PlayerControll : MonoBehaviour
+[RequireComponent(typeof(Animator))]
+[RequireComponent(typeof(Rigidbody2D))]
+
+public class PlayerMover : MonoBehaviour
 {
     [SerializeField] private float _speed = 5;
     
