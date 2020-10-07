@@ -7,23 +7,36 @@ public class AlarmZone : MonoBehaviour
 {
     [SerializeField] private GameObject _box;
     [SerializeField] private AudioSource _audioSource;
-    [SerializeField] private float _startAlarmVolume;
+    [SerializeField] private int _alarmVolumeChangeTime;
     
-    private bool _alarmOn;
+    private bool _alarmOn = false;
+    private int _minVolume = 0;
+    private int _maxVolume = 1;
+    private float _tempTime = 0f;
 
     private void Start()
     {
-        _audioSource.volume = _startAlarmVolume;
-        _alarmOn = false;
+        _audioSource.volume = 0f;  
     }
 
     private void Update()
     {
-        if(_alarmOn)
-            StartCoroutine(AlarmVolumeUp());
+        if (_alarmOn)
+        {
+            _tempTime += Time.deltaTime / _alarmVolumeChangeTime;
+            if (_tempTime < _maxVolume)
+                _audioSource.volume = Mathf.Lerp(_minVolume, _maxVolume, _tempTime);
+        }
+
         if (!_alarmOn && _audioSource.volume > 0)
-            StartCoroutine(AlarmVolumeDown());
-        
+        {
+            
+            _tempTime += Time.deltaTime / _alarmVolumeChangeTime;
+            if(_tempTime > _minVolume)
+            {
+                _audioSource.volume = Mathf.Lerp(_maxVolume, _minVolume, _tempTime);
+            }
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -32,6 +45,7 @@ public class AlarmZone : MonoBehaviour
         {
             _box.SetActive(false);
             _alarmOn = true;
+            _tempTime = 0;
             _audioSource.Play();
         }
     }
@@ -40,29 +54,8 @@ public class AlarmZone : MonoBehaviour
     {
         _box.SetActive(true);
         _alarmOn = false;
+        _tempTime = 0;
         if (_audioSource.volume <= 0)
             _audioSource.Stop();
     }
-
-    private IEnumerator AlarmVolumeUp()
-    {
-        for (float i = 0; i <= 1; i++)
-        {
-            _audioSource.volume += i * Time.deltaTime;
-
-            yield return null;
-        }
-    }
-
-    private IEnumerator AlarmVolumeDown()
-    {
-        for (float i = 0; i <= 1; i++)
-        {
-            _audioSource.volume -= i * Time.deltaTime;
-
-            yield return null;
-        }
-    }
-
-
 }
